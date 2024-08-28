@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Texto em Voz Alta</title>
+</head>
+<body>
+    <h1>Texto em Voz Alta</h1>
+    <p id="message">Carregando texto...</p>
+
+    <script>
+        // URL do arquivo JSON que contém o texto dinâmico
+        const jsonUrl = 'https://araujoeduarda.github.io/meu-qr-texto/teste.json';
+
+        // Função para buscar o texto dinamicamente
+        async function fetchText() {
+            try {
+                const response = await fetch(jsonUrl);
+                const data = await response.json();
+                document.getElementById('message').innerText = data.text;
+                // Pequeno atraso para garantir que o texto seja exibido antes da leitura
+                setTimeout(() => speakText(data.text), 500); 
+            } catch (error) {
+                document.getElementById('message').innerText = 'Erro ao carregar o texto.';
+                console.error('Erro ao carregar o texto:', error);
+            }
+        }
+
+        // Função para falar o texto em voz alta
+        function speakText(text) {
+            if ('speechSynthesis' in window) {
+                const synth = window.speechSynthesis;
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'pt-BR'; // Definir para Português Brasil
+                synth.speak(utterance);
+            } else {
+                console.error('API de síntese de voz não suportada neste navegador.');
+            }
+        }
+
+        // Carregar o texto e falar automaticamente ao carregar a página
+        fetchText();
+    </script>
+</body>
+</html>
