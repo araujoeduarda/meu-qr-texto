@@ -10,11 +10,22 @@
     <p id="message">Carregando texto...</p>
 
     <script>
-        // URL do arquivo JSON que contém o texto dinâmico
-        const jsonUrl = 'https://araujoeduarda.github.io/meu-qr-texto/teste.json';
+        // Lista de URLs para os arquivos JSON
+        const jsonUrls = [
+            'https://araujoeduarda.github.io/meu-qr-texto/teste1.json',
+            'https://araujoeduarda.github.io/meu-qr-texto/teste2.json'
+            
+        ];
 
-        // Função para buscar o texto dinamicamente
+        // Função para escolher aleatoriamente um URL da lista
+        function getRandomJsonUrl() {
+            const randomIndex = Math.floor(Math.random() * jsonUrls.length);
+            return jsonUrls[randomIndex];
+        }
+
+        // Função para buscar o texto dinamicamente de um JSON aleatório
         async function fetchText() {
+            const jsonUrl = getRandomJsonUrl();
             try {
                 const response = await fetch(jsonUrl);
                 const data = await response.json();
@@ -33,6 +44,9 @@
                 const synth = window.speechSynthesis;
                 const utterance = new SpeechSynthesisUtterance(text);
                 utterance.lang = 'pt-BR'; // Definir para Português Brasil
+                utterance.onerror = function(event) {
+                    console.error('Erro na síntese de voz:', event);
+                };
                 synth.speak(utterance);
             } else {
                 console.error('API de síntese de voz não suportada neste navegador.');
