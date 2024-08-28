@@ -8,6 +8,7 @@
 <body>
     <h1>Texto em Voz Alta</h1>
     <p id="message">Carregando texto...</p>
+    <button id="speakButton">Falar Texto</button> <!-- Botão para iniciar a leitura -->
 
     <script>
         // Lista de URLs JSON contendo textos diferentes
@@ -59,7 +60,20 @@
             }
         }
 
-        // Carregar o texto e falar automaticamente ao carregar a página
+        // Carregar o texto ao abrir a página
+        fetchText();
+
+        // Adicionar funcionalidade ao botão para iniciar a leitura
+        document.getElementById('speakButton').addEventListener('click', () => {
+            const text = document.getElementById('message').innerText;
+            if (text && text !== 'Carregando texto...') {
+                speakText(text);
+            }
+        });
+    </script>
+</body>
+</html>
+
         fetchText();
     </script>
 </body>
