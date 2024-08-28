@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerar QR Code</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+    <h1>Gerar QR Code</h1>
+    <div id="qrcode"></div>
+
+    <script>
+        // URL da página web que contém o texto dinâmico
+        const pageUrl = "https://araujoeduarda.github.io/meu-qr-texto/tts.html"; // Altere para a URL correta da sua página tts.html
+
+        // Gerar o QR Code com a URL da página HTML
+        new QRCode(document.getElementById("qrcode"), pageUrl);
+
+        console.log('QR code gerado com a URL:', pageUrl);
+    </script>
+</body>
+</html>
