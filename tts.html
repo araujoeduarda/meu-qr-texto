@@ -15,19 +15,54 @@
         const jsonUrls = [
             'https://araujoeduarda.github.io/meu-qr-texto/versiculo1.json',
             'https://araujoeduarda.github.io/meu-qr-texto/versiculo2.json',
-            'https://araujoeduarda.github.io/meu-qr-texto/versiculo3.json'
+            'https://araujoeduarda.github.io/meu-qr-texto/versiculo3.json',
+            'https://araujoeduarda.github.io/meu-qr-texto/versiculo4.json',
+            'https://araujoeduarda.github.io/meu-qr-texto/versiculo5.json',
+            'https://araujoeduarda.github.io/meu-qr-texto/versiculo6.json',
+            'https://araujoeduarda.github.io/meu-qr-texto/versiculo7.json',
+            'https://araujoeduarda.github.io/meu-qr-texto/versiculo8.json',
+            'https://araujoeduarda.github.io/meu-qr-texto/versiculo9.json',
+            'https://araujoeduarda.github.io/meu-qr-texto/versiculo10.json',
+            'https://araujoeduarda.github.io/meu-qr-texto/versiculo11.json',
+            'https://araujoeduarda.github.io/meu-qr-texto/versiculo12.json',
+            'https://araujoeduarda.github.io/meu-qr-texto/versiculo13.json',
             // Adicione mais URLs conforme necessário
         ];
 
-        // Função para obter um URL aleatório da lista
-        function getRandomJsonUrl() {
-            const randomIndex = Math.floor(Math.random() * jsonUrls.length);
-            return jsonUrls[randomIndex];
+        let indices = jsonUrls.map((_, index) => index); // Cria um array de índices
+        let lastIndex = -1; // Inicializa o índice do último item exibido
+
+        // Função para embaralhar um array usando o algoritmo de Fisher-Yates
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        // Função para obter o próximo URL da lista sem repetir o anterior
+        function getNextJsonUrl() {
+            if (indices.length === 0) {
+                // Se todos os índices foram usados, reinitialize o array e embaralhe novamente
+                indices = jsonUrls.map((_, index) => index);
+                shuffleArray(indices);
+            }
+            
+            let currentIndex;
+            do {
+                // Escolhe um índice aleatório, garantindo que não seja o mesmo do último
+                currentIndex = indices[Math.floor(Math.random() * indices.length)];
+            } while (currentIndex === lastIndex);
+
+            // Remove o índice selecionado do array
+            indices = indices.filter(index => index !== currentIndex);
+            lastIndex = currentIndex;
+            return jsonUrls[currentIndex];
         }
 
         // Função para buscar o texto dinamicamente
         async function fetchText() {
-            const jsonUrl = getRandomJsonUrl(); // Escolher um JSON aleatório
+            const jsonUrl = getNextJsonUrl(); // Escolher o próximo JSON
             try {
                 console.log('Buscando texto de:', jsonUrl);
                 const response = await fetch(jsonUrl);
@@ -74,6 +109,3 @@
 </body>
 </html>
 
-    </script>
-</body>
-</html>
