@@ -3,15 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Texto em Voz Alta</title>
+    <link rel="icon" href="img/imgplay.png" type="image/x-icon">
+    <title>QRPlay</title>
+    <style>
+        /* Estilo para ocupar a altura total da página */
+        html, body {
+            height: 100%;
+            margin: 0;
+            display: grid;
+            place-items: center; /* Centraliza o conteúdo no meio da tela */
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+        }
+
+        /* Estilo do botão */
+        button {
+            padding: 0;
+            border: none;
+            background: none;
+            cursor: pointer;
+        }
+
+        /* Estilo da imagem do botão */
+        button img {
+            width: 80px; /* Ajuste o tamanho da imagem */
+            height: auto;
+        }
+        #message {
+            position: absolute;  /* Remove o elemento do fluxo da página */
+            left: -9999px;       /* Move o elemento para fora da tela */
+        }
+
+    </style>
 </head>
 <body>
-    <h1>Texto em Voz Alta</h1>
-    <p id="message">Carregando texto...</p>
-    <button id="speakButton">Falar Texto</button> <!-- Botão para iniciar a leitura -->
+    <button id="speakButton">
+        <img src="img/imgplay.png" alt="Falar Texto"> <!-- Imagem no botão -->
+    </button>
+
+    <p id="message">Carregando texto...</p> <!-- Texto invisível -->
 
     <script>
-        // Lista de URLs JSON contendo textos diferentes
         const jsonUrls = [
             'https://araujoeduarda.github.io/meu-qr-texto/versiculo1.json',
             'https://araujoeduarda.github.io/meu-qr-texto/versiculo2.json',
@@ -25,14 +57,18 @@
             'https://araujoeduarda.github.io/meu-qr-texto/versiculo10.json',
             'https://araujoeduarda.github.io/meu-qr-texto/versiculo11.json',
             'https://araujoeduarda.github.io/meu-qr-texto/versiculo12.json',
-            'https://araujoeduarda.github.io/meu-qr-texto/versiculo13.json',
+            'https://araujoeduarda.github.io/meu-qr-texto/versiculo13.json'
             // Adicione mais URLs conforme necessário
         ];
 
-        let indices = jsonUrls.map((_, index) => index); // Cria um array de índices
-        let lastIndex = -1; // Inicializa o índice do último item exibido
+        let indices = jsonUrls.map((_, index) => index);
+        let lastIndex = -1;
+        let synth = window.speechSynthesis;
+        let utterance = null;
+        let isPaused = false;
+        let currentText = '';
+        let currentIndex = 0;
 
-        // Função para embaralhar um array usando o algoritmo de Fisher-Yates
         function shuffleArray(array) {
             for (let i = array.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
@@ -40,29 +76,23 @@
             }
         }
 
-        // Função para obter o próximo URL da lista sem repetir o anterior
         function getNextJsonUrl() {
             if (indices.length === 0) {
-                // Se todos os índices foram usados, reinitialize o array e embaralhe novamente
                 indices = jsonUrls.map((_, index) => index);
                 shuffleArray(indices);
             }
-            
-            let currentIndex;
+
             do {
-                // Escolhe um índice aleatório, garantindo que não seja o mesmo do último
                 currentIndex = indices[Math.floor(Math.random() * indices.length)];
             } while (currentIndex === lastIndex);
 
-            // Remove o índice selecionado do array
             indices = indices.filter(index => index !== currentIndex);
             lastIndex = currentIndex;
             return jsonUrls[currentIndex];
         }
 
-        // Função para buscar o texto dinamicamente
         async function fetchText() {
-            const jsonUrl = getNextJsonUrl(); // Escolher o próximo JSON
+            const jsonUrl = getNextJsonUrl();
             try {
                 console.log('Buscando texto de:', jsonUrl);
                 const response = await fetch(jsonUrl);
@@ -72,40 +102,55 @@
                 const data = await response.json();
                 console.log('Texto carregado:', data.text);
                 document.getElementById('message').innerText = data.text;
-                // Pequeno atraso para garantir que o texto seja exibido antes da leitura
-                setTimeout(() => speakText(data.text), 500); 
+                currentText = data.text;
             } catch (error) {
                 document.getElementById('message').innerText = 'Erro ao carregar o texto.';
                 console.error('Erro ao carregar o texto:', error);
             }
         }
 
-        // Função para falar o texto em voz alta
-        function speakText(text) {
-            if ('speechSynthesis' in window) {
-                const synth = window.speechSynthesis;
-                const utterance = new SpeechSynthesisUtterance(text);
-                utterance.lang = 'pt-BR'; // Definir para Português Brasil
-                utterance.onend = () => console.log('Leitura concluída');
-                utterance.onerror = (event) => console.error('Erro na síntese de voz:', event);
-                console.log('Iniciando síntese de voz com o texto:', text);
-                synth.speak(utterance);
+        function playText() {
+            if (utterance && isPaused) {
+                synth.resume();
+                isPaused = false;
+                document.querySelector('#speakButton img').src = 'img/imgpause.png';
             } else {
-                console.error('API de síntese de voz não suportada neste navegador.');
+                utterance = new SpeechSynthesisUtterance(currentText);
+                utterance.lang = 'pt-BR';
+                utterance.onend = () => {
+                    console.log('Leitura concluída');
+                    document.querySelector('#speakButton img').src = 'img/imgplay.png';
+                };
+                utterance.onerror = (event) => console.error('Erro na síntese de voz:', event);
+                console.log('Iniciando síntese de voz com o texto:', currentText);
+                synth.speak(utterance);
+                document.querySelector('#speakButton img').src = 'img/imgpause.png';
             }
         }
 
-        // Carregar o texto ao abrir a página
-        fetchText();
+        function pauseText() {
+            if (synth.speaking && !synth.paused) {
+                synth.pause();
+                isPaused = true;
+                document.querySelector('#speakButton img').src = 'img/imgplay.png';
+            }
+        }
 
-        // Adicionar funcionalidade ao botão para iniciar a leitura
         document.getElementById('speakButton').addEventListener('click', () => {
-            const text = document.getElementById('message').innerText;
-            if (text && text !== 'Carregando texto...') {
-                speakText(text);
+            if (synth.speaking) {
+                if (isPaused) {
+                    playText();
+                } else {
+                    pauseText();
+                }
+            } else {
+                if (currentText && currentText !== 'Carregando texto...') {
+                    playText();
+                }
             }
         });
+
+        fetchText();
     </script>
 </body>
 </html>
-
